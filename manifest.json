@@ -1,7 +1,7 @@
 {
   "name": "北海道秋日自由行 2025",
   "short_name": "Hokkaido2025",
-  "start_url": "./index.html",
+  "start_url": "https://wendy890913-cloud.github.io/hokkaido-autumn-trip-2025/",
   "display": "standalone",
   "background_color": "#FFF8F0",
   "theme_color": "#D98C59",
@@ -13,3 +13,4 @@
     }
   ]
 }
+
