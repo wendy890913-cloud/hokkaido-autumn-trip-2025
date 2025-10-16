@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>2025.10.19～2025.10.24 北海道秋日自由行（可安裝 PWA）</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D98C59">
+
+<style>
+  :root{--leaf:#C65A3C;--accent:#D98C59;--bg:#FFF8F0;--card:#fff;--text:#222;--muted:#666}
+  html,body{height:100%;margin:0;background:var(--bg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--text)}
+  .app{min-height:100vh;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;gap:10px;padding:12px;background:linear-gradient(90deg,rgba(198,90,60,0.06),transparent)}
+  .logo{width:46px;height:46px;border-radius:8px;background:linear-gradient(135deg,var(--leaf),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+  .title{font-weight:800;font-size:15px}
+  .subtitle{font-size:12px;color:var(--muted)}
+  .navthumbs{display:flex;gap:8px;overflow:auto;padding:8px 12px;background:rgba(255,255,255,0.6)}
+  .thumb{min-width:80px;padding:8px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.06);text-align:center;font-size:12px;color:var(--muted);cursor:pointer}
+  .thumb.active{border:2px solid var(--leaf);color:var(--leaf);font-weight:700}
+  .viewport{flex:1;position:relative;overflow:hidden}
+  .slider{display:flex;height:100%;transition:transform .32s ease}
+  .page{min-width:100%;box-sizing:border-box;padding:16px;overflow:auto}
+  .card{background:var(--card);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.06)}
+  h2{margin:0;color:var(--leaf);font-size:16px}
+  .slogan{color:var(--accent);font-size:12px;margin-top:6px}
+  .timeline{margin-top:10px}
+  .row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+  .time{width:76px;font-weight:700;color:var(--accent);font-size:13px}
+  .desc{flex:1;font-size:14px;line-height:1.45}
+  .res{margin-top:8px;padding:8px;background:linear-gradient(90deg, rgba(217,140,89,0.04), rgba(198,90,60,0.02));border-radius:8px}
+  .res .name{font-weight:700;color:var(--leaf)}
+  .res .info{font-size:12px;color:var(--muted);margin-top:4px}
+  .notes{margin-top:10px;border:1px dashed rgba(0,0,0,0.08);padding:8px;border-radius:8px;background:#fff;min-height:120px}
+  .footer{padding:10px;text-align:center;font-size:12px;color:var(--muted)}
+  .controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;pointer-events:none}
+  .btn{pointer-events:auto;background:var(--leaf);color:#fff;padding:8px 12px;border-radius:30px;box-shadow:0 6px 18px rgba(198,90,60,0.12);font-weight:700;border:none}
+  .smallbtn{background:rgba(0,0,0,0.06);color:var(--leaf);padding:6px 10px;border-radius:20px;font-weight:700;border:none}
+  .installPrompt{display:flex;gap:8px;align-items:center}
+  @media (min-width:600px){ .page{padding:20px} .thumb{min-width:110px} }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="logo">HOK</div>
+    <div style="flex:1">
+      <div class="title">2025.10.19～2025.10.24 北海道秋日自由行</div>
+      <div class="subtitle">For AiHua &amp; Mom · 可離線筆記 &amp; 安裝</div>
+    </div>
+    <div id="installArea" class="installPrompt">
+      <button id="installBtn" class="smallbtn" style="display:none">安裝到主畫面</button>
+      <button id="shareBtn" class="smallbtn">分享</button>
+    </div>
+  </div>
+
+  <div class="navthumbs" id="thumbs"></div>
+
+  <div class="viewport" id="viewport">
+    <div class="slider" id="slider"></div>
+    <div class="controls">
+      <button class="btn" id="prevBtn" aria-label="上一頁">◀ 上一頁</button>
+      <button class="btn" id="nextBtn" aria-label="下一頁">下一頁 ▶</button>
+    </div>
+  </div>
+
+  <div class="footer">左右滑動切換頁面 • 點縮圖可快速跳頁 • 筆記會自動儲存</div>
+</div>
+
+<script>
+/* ========== 行程資料（同前） ========== */
+const pages = [
+  { id:'day1', day:'Day 1 — 10/19（日）', slogan:'🍂 初見北海道・秋風吹起序章',
+    items:[
+      {t:'07:30', d:'抵達新千歲機場（CTS）→ 搭 JR 快速エアポート 前往札幌（約 40 分）'},
+      {t:'09:30', d:'早餐：札幌站 Bakery 或 飯店早餐'},
+      {t:'10:30–14:00', d:'北海道舊本廳舍、札幌時計台、大通公園、狸小路商店街（輕鬆逛街）'},
+      {t:'16:00', d:'飯店 check-in / 休息'}
+    ],
+    restaurants:[
+      {name:'湯咖哩 GARAKU', info:'11:30–15:30 / 17:00–23:00 · 多為現場候位', recommend:'雞腿湯咖哩'},
+      {name:'根室花まる（Stella Place）', info:'11:00–22:00 · 現場發券候位', recommend:'鮮魚壽司'}
+    ],
+    note:'傍晚於大通公園拍照，街燈與楓葉交織最美。'
+  },
+  { id:'day2', day:'Day 2 — 10/20（一）', slogan:'🏞️ KLOOK：紅葉花海與山谷餐桌',
+    items:[
+      {t:'09:00', d:'集合出發（KLOOK 指定集合地，通常札幌站南口）'},
+      {t:'10:00–11:30', d:'國營瀧野鈴蘭丘陵公園（花海、波波草）'},
+      {t:'12:00–12:50', d:'頭大佛殿水庭（安藤忠雄建築）'},
+      {t:'13:10–14:30', d:'八劍山 BBQ（成吉思汗或雜錦烤肉／含午餐）'},
+      {t:'15:00–16:15', d:'定山湖 / 豐平峽水壩：紅葉峽谷景觀'},
+      {t:'16:30–17:00', d:'札幌湖（紅葉倒影拍照）'}
+    ], restaurants:[], note:'回程約 17:30–18:30 抵達札幌（視當日交通與停留時間稍有浮動）。'
+  },
+  { id:'day3', day:'Day 3 — 10/21（二）', slogan:'🚗 自駕・登別與洞爺湖的秋色慢行（一般道路）',
+    items:[
+      {t:'07:30', d:'札幌出發（導航設定避開高速）'},
+      {t:'10:20', d:'登別地獄谷（步道散步、溫泉蒸氣；建議停 60–90 分）'},
+      {t:'11:30–12:30', d:'登別溫泉街午餐（味の大王—地獄拉麵）'},
+      {t:'13:10–14:00', d:'沿道道 2 號一般道路前往洞爺湖（可停倶多樂湖展望台）'},
+      {t:'14:10–15:10', d:'洞爺湖展望台（湖景拍照、湖畔足湯；Lake Hill Farm 咖啡）'},
+      {t:'15:20–16:00', d:'昭和新山（地熱區，可選熊牧場）'},
+      {t:'16:10–18:40', d:'國道 230 號（經中山峠）慢行返回札幌（中山峠望羊蹄休息站）'}
+    ],
+    restaurants:[{name:'味の大王（登別）', info:'地獄拉麵名店；營業依分店而異，建議出發前查詢', recommend:'咖哩拉麵'}],
+    note:'導航請設定「避開高速」或「一般道路優先」；出發前加滿油。'
+  },
+  { id:'day4', day:'Day 4 — 10/22（三）', slogan:'🦭 KLOOK：旭山動物園＋美瑛白鬚瀑布＆青池',
+    items:[
+      {t:'08:00', d:'集合出發（札幌集合）'},
+      {t:'10:15–12:15', d:'旭山動物園（建議停 2 小時，觀賞企鵝散步與海豹館）'},
+      {t:'12:50', d:'Ken & Mary 之樹（車覽）'},
+      {t:'13:10', d:'白鬚瀑布（約 20 分）'},
+      {t:'13:40', d:'白金青池（Blue Pond，約 20 分）'},
+      {t:'15:00', d:'森林精靈露台或男山酒造館（季節替代）'},
+      {t:'17:30', d:'返回札幌'}
+    ], restaurants:[], note:'請準備保暖外套與防水鞋；園區人潮多，注意保管物品。'
+  },
+  { id:'day5', day:'Day 5 — 10/23（四）', slogan:'🏙️ 小樽散步・甜點與玻璃藝術',
+    items:[
+      {t:'08:30', d:'JR 札幌 → 小樽（約 40 分）'},
+      {t:'09:30', d:'小樽運河 散步拍照'},
+      {t:'10:30', d:'北一硝子 / 音樂盒堂（玻璃工藝、購物）'},
+      {t:'12:00', d:'三角市場午餐（海鮮丼）'},
+      {t:'14:00–16:30', d:'LeTAO 本店（甜點） & 堺町通購物'}
+    ],
+    restaurants:[{name:'LeTAO（小樽本店）', info:'9:00–18:00（季節變動）；平日可詢問座位', recommend:'雙層起司蛋糕'}],
+    note:'小樽多石板路，穿舒適鞋；甜點店週末人多，請提早排隊。'
+  },
+  { id:'day6', day:'Day 6 — 10/24（五）', slogan:'🛍️ 札幌購物・甜點收尾、飛返台灣',
+    items:[
+      {t:'09:00', d:'大丸百貨 / Bic Camera / 白色戀人公園（購物）'},
+      {t:'12:00', d:'午餐：札幌站便當或機場餐廳'},
+      {t:'12:30', d:'搭 JR 快速エアポート 前往新千歲機場（約 40 分）'},
+      {t:'14:40', d:'FD243 起飛 → 18:00 抵達台北'}
+    ], restaurants:[], note:'出發前再次確認航班與機場還車位置。'
+  }
+];
+
+/* ========== 建頁與縮圖 ========== */
+const slider = document.getElementById('slider');
+const thumbs = document.getElementById('thumbs');
+
+function mkPage(data, idx){
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.innerHTML = `
+    <div class="card" data-page="${data.id}">
+      <h2>${data.day}</h2>
+      <div class="slogan">${data.slogan}</div>
+      <div class="timeline">
+        ${data.items.map(it=>`<div class="row"><div class="time">${it.t}</div><div class="desc">${it.d}</div></div>`).join('')}
+      </div>
+      ${data.restaurants && data.restaurants.length ? `<div style="margin-top:10px">${data.restaurants.map(r=>`<div class="res"><div class="name">${r.name}</div><div class="info">${r.info}</div><div class="info"><strong>推薦：</strong>${r.recommend || ''}</div></div>`).join('')}</div>` : ''}
+      <div class="note" style="margin-top:10px">${data.note || ''}</div>
+      <div style="margin-top:10px"><div class="notes" contenteditable="true" data-key="note-${data.id}"></div></div>
+    </div>
+  `;
+  slider.appendChild(el);
+
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb';
+  thumb.innerHTML = `<div style="font-weight:700">${data.day.split(' ')[0]}</div><div style="font-size:11px;color:var(--muted)">${data.day.split('—')[1]}</div>`;
+  thumb.addEventListener('click',()=>goTo(idx));
+  thumbs.appendChild(thumb);
+}
+pages.forEach((p,i)=>mkPage(p,i));
+
+let current = 0;
+const pageCount = pages.length;
+const thumbEls = Array.from(document.querySelectorAll('.thumb'));
+thumbEls[0].classList.add('active');
+
+function updateSlider(){
+  const x = -current * 100;
+  slider.style.transform = `translateX(${x}%)`;
+  thumbEls.forEach((t,i)=> t.classList.toggle('active', i===current));
+  window.scrollTo(0,0);
+}
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{ if(current>0){current--;updateSlider();}});
+document.getElementById('nextBtn').addEventListener('click', ()=>{ if(current<pageCount-1){current++;updateSlider();}});
+
+function goTo(i){ current = i; updateSlider(); }
+
+/* swipe */
+let startX=0, startY=0, startTime=0;
+const threshold=50, restraint=100, allowedTime=500;
+const viewportEl=document.getElementById('viewport');
+viewportEl.addEventListener('touchstart', function(e){ const t=e.changedTouches[0]; startX=t.pageX; startY=t.pageY; startTime=new Date().getTime(); }, false);
+viewportEl.addEventListener('touchend', function(e){ const t=e.changedTouches[0]; const distX=t.pageX-startX, distY=t.pageY-startY, elapsed=new Date().getTime()-startTime; if(elapsed<=allowedTime && Math.abs(distX)>=threshold && Math.abs(distY)<=restraint){ if(distX>0) { if(current>0) current--; } else { if(current<pageCount-1) current++; } updateSlider(); } }, false);
+
+/* keyboard */
+document.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') { if(current>0){current--;updateSlider();}} if(e.key==='ArrowRight'){ if(current<pageCount-1){current++;updateSlider();}}});
+
+/* ========== 筆記（localStorage）自動載入與儲存 ========== */
+function loadNotes(){
+  document.querySelectorAll('.notes').forEach(el=>{
+    const key = el.dataset.key;
+    if(!key) return;
+    const val = localStorage.getItem(key);
+    if(val) el.innerHTML = val;
+  });
+}
+function saveNotes(){
+  document.querySelectorAll('.notes').forEach(el=>{
+    const key = el.dataset.key;
+    if(!key) return;
+    localStorage.setItem(key, el.innerHTML);
+  });
+}
+/* 載入已存筆記 */
+loadNotes();
+/* 定時自動保存（每 3 秒）及離開時保存 */
+setInterval(saveNotes, 3000);
+window.addEventListener('beforeunload', saveNotes);
+
+/* 也在編輯完後立即儲存 */
+document.querySelectorAll('.notes').forEach(el=>{
+  el.addEventListener('input', ()=> localStorage.setItem(el.dataset.key, el.innerHTML));
+});
+
+/* ========== 簡單分享/安裝提示 ========== */
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'inline-block';
+});
+installBtn.addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = 'none';
+});
+
+/* 分享 */
+document.getElementById('shareBtn').addEventListener('click', ()=>{
+  const txt = `2025.10.19～2025.10.24 北海道秋日自由行 — 行程已儲存於此檔案。`;
+  if(navigator.share) navigator.share({title:'北海道秋日自由行', text:txt});
+  else alert('請將此 HTML 檔案傳給同行，或將頁面加入主畫面以便離線使用。');
+});
+
+/* ========== Service worker 註冊 ========== */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js').then(reg=>{
+    console.log('SW registered', reg);
+  }).catch(err=>console.warn('SW register failed', err));
+}
+
+/* init */
+updateSlider();
+</script>
+</body>
+</html>
